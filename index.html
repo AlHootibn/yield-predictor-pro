@@ -1,0 +1,1745 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Yield Predictor Pro</title>
+  <style>
+    :root {
+      --bg: #0f1117;
+      --surface: #1a1d27;
+      --surface2: #22263a;
+      --border: #2e3350;
+      --accent: #6c63ff;
+      --accent2: #00d4aa;
+      --text: #e8eaf6;
+      --muted: #7b80a0;
+      --green: #2ecc71;
+      --yellow: #f39c12;
+      --red: #e74c3c;
+      --orange: #e67e22;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      padding: 24px 16px 60px;
+    }
+
+    header { text-align: center; margin-bottom: 32px; }
+
+    header .badge {
+      display: inline-block;
+      background: linear-gradient(135deg, #6c63ff33, #00d4aa22);
+      border: 1px solid #6c63ff55;
+      color: var(--accent2);
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      padding: 4px 14px;
+      border-radius: 20px;
+      margin-bottom: 12px;
+    }
+
+    header h1 {
+      font-size: clamp(24px, 5vw, 40px);
+      font-weight: 800;
+      background: linear-gradient(135deg, #e8eaf6, #6c63ff, #00d4aa);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      line-height: 1.2;
+    }
+
+    header p { color: var(--muted); margin-top: 8px; font-size: 14px; }
+
+    .container { max-width: 1000px; margin: 0 auto; display: grid; gap: 20px; }
+
+    /* ── Tab bar ── */
+    .tab-bar {
+      display: flex;
+      gap: 4px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 6px;
+      overflow-x: auto;
+    }
+
+    .tab-btn {
+      flex: 1;
+      min-width: 110px;
+      padding: 11px 14px;
+      background: transparent;
+      border: none;
+      color: var(--muted);
+      font-size: 13px;
+      font-weight: 700;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: all 0.2s;
+      white-space: nowrap;
+      letter-spacing: 0.3px;
+    }
+
+    .tab-btn:hover { color: var(--text); }
+
+    .tab-btn.active {
+      background: #6c63ff22;
+      color: var(--accent);
+      border: 1px solid #6c63ff44;
+    }
+
+    .tab-btn.tab-farm.active {
+      background: #00d4aa15;
+      color: var(--accent2);
+      border-color: #00d4aa44;
+    }
+
+    .tab-btn.tab-history.active {
+      background: #f39c1215;
+      color: var(--yellow);
+      border-color: #f39c1244;
+    }
+
+    .tab-panel { display: none; }
+    .tab-panel.active { display: grid; gap: 20px; }
+
+    /* ── Cards ── */
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 26px;
+    }
+
+    .card-title {
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin-bottom: 18px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .card-title.teal { color: var(--accent2); }
+    .card-title.yellow { color: var(--yellow); }
+
+    .card-title::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: var(--border);
+    }
+
+    /* ── Form elements ── */
+    label {
+      display: block;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--muted);
+      margin-bottom: 7px;
+      letter-spacing: 0.5px;
+    }
+
+    input[type="number"], input[type="text"], select {
+      width: 100%;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      color: var(--text);
+      font-size: 14px;
+      padding: 11px 13px;
+      border-radius: 10px;
+      outline: none;
+      transition: border-color 0.2s;
+      appearance: none;
+    }
+
+    input:focus, select:focus { border-color: var(--accent); }
+
+    .form-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 16px;
+    }
+
+    .form-grid-3 {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 14px;
+    }
+
+    /* ── Mushroom selector ── */
+    .mushroom-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+      gap: 8px;
+      margin-bottom: 20px;
+    }
+
+    .mushroom-option { position: relative; }
+
+    .mushroom-option input[type="radio"] {
+      position: absolute;
+      opacity: 0;
+      width: 0;
+    }
+
+    .mushroom-option label {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 5px;
+      padding: 12px 8px;
+      background: var(--surface2);
+      border: 2px solid var(--border);
+      border-radius: 12px;
+      cursor: pointer;
+      transition: all 0.18s;
+      text-align: center;
+      margin: 0;
+      letter-spacing: 0;
+    }
+
+    .mushroom-option label .emoji { font-size: 26px; }
+    .mushroom-option label .name { font-weight: 600; font-size: 12px; color: var(--text); }
+    .mushroom-option label .meta { font-size: 10px; color: var(--muted); }
+
+    .mushroom-option input:checked + label {
+      border-color: var(--accent);
+      background: #6c63ff18;
+      box-shadow: 0 0 0 3px #6c63ff1a;
+    }
+
+    .mushroom-option label:hover { border-color: var(--accent); }
+
+    /* ── Buttons ── */
+    .btn-row { display: grid; grid-template-columns: 1fr auto; gap: 10px; margin-top: 20px; }
+
+    .btn {
+      padding: 14px;
+      background: linear-gradient(135deg, var(--accent), #5a54e0);
+      color: #fff;
+      font-size: 15px;
+      font-weight: 700;
+      border: none;
+      border-radius: 12px;
+      cursor: pointer;
+      transition: opacity 0.2s, transform 0.1s;
+    }
+
+    .btn:hover { opacity: 0.9; }
+    .btn:active { transform: scale(0.99); }
+
+    .btn-teal {
+      padding: 14px;
+      background: linear-gradient(135deg, #00d4aa, #00b89c);
+      color: #0f1117;
+      font-size: 15px;
+      font-weight: 700;
+      border: none;
+      border-radius: 12px;
+      cursor: pointer;
+      transition: opacity 0.2s;
+      margin-top: 20px;
+      width: 100%;
+    }
+
+    .btn-teal:hover { opacity: 0.9; }
+
+    .btn-outline {
+      padding: 14px 20px;
+      background: none;
+      border: 2px solid var(--accent2);
+      color: var(--accent2);
+      font-size: 13px;
+      font-weight: 700;
+      border-radius: 12px;
+      cursor: pointer;
+      transition: all 0.2s;
+      white-space: nowrap;
+    }
+
+    .btn-outline:hover { background: #00d4aa18; }
+
+    .btn-sm {
+      padding: 7px 14px;
+      background: none;
+      border: 1px solid var(--border);
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 600;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .btn-sm:hover { border-color: var(--accent2); color: var(--accent2); }
+
+    .btn-danger {
+      padding: 7px 14px;
+      background: none;
+      border: 1px solid #e74c3c44;
+      color: var(--red);
+      font-size: 12px;
+      font-weight: 600;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .btn-danger:hover { background: #e74c3c18; }
+
+    /* ── Stat cards ── */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(155px, 1fr));
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+
+    .stat {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 15px;
+    }
+
+    .stat-label {
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 7px;
+    }
+
+    .stat-value { font-size: 22px; font-weight: 800; line-height: 1; }
+    .stat-sub { font-size: 11px; color: var(--muted); margin-top: 4px; }
+
+    .stat.green .stat-value { color: var(--green); }
+    .stat.blue .stat-value { color: var(--accent2); }
+    .stat.purple .stat-value { color: var(--accent); }
+    .stat.red .stat-value { color: var(--red); }
+    .stat.yellow .stat-value { color: var(--yellow); }
+    .stat.orange .stat-value { color: var(--orange); }
+
+    /* Big efficiency display */
+    .efficiency-hero {
+      text-align: center;
+      padding: 28px 20px;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      margin-bottom: 20px;
+    }
+
+    .efficiency-hero .eff-label {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 10px;
+    }
+
+    .efficiency-hero .eff-value {
+      font-size: 72px;
+      font-weight: 900;
+      line-height: 1;
+      letter-spacing: -2px;
+    }
+
+    .efficiency-hero .eff-grade {
+      font-size: 14px;
+      font-weight: 700;
+      margin-top: 8px;
+    }
+
+    /* Comparison bar */
+    .compare-section { margin-bottom: 20px; }
+
+    .compare-row { margin-bottom: 10px; }
+
+    .compare-row-label {
+      display: flex;
+      justify-content: space-between;
+      font-size: 12px;
+      margin-bottom: 5px;
+    }
+
+    .compare-row-label .cr-name { font-weight: 600; color: var(--muted); }
+    .compare-row-label .cr-val { font-weight: 700; }
+
+    .compare-track {
+      height: 28px;
+      background: var(--surface2);
+      border-radius: 8px;
+      overflow: hidden;
+      border: 1px solid var(--border);
+    }
+
+    .compare-fill {
+      height: 100%;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      padding-left: 10px;
+      font-size: 11px;
+      font-weight: 700;
+      color: #fff;
+      transition: width 0.8s cubic-bezier(.4,0,.2,1);
+    }
+
+    .fill-expected { background: linear-gradient(90deg, #6c63ffaa, #6c63ffcc); }
+    .fill-actual-good { background: linear-gradient(90deg, #2ecc71aa, #2ecc71cc); }
+    .fill-actual-warn { background: linear-gradient(90deg, #f39c12aa, #f39c12cc); }
+    .fill-actual-bad { background: linear-gradient(90deg, #e74c3caa, #e74c3ccc); }
+
+    /* Risk / rec boxes */
+    .risk-box {
+      padding: 13px 16px;
+      border-radius: 10px;
+      border-left: 4px solid;
+      font-size: 13px;
+      font-weight: 500;
+      line-height: 1.5;
+    }
+
+    .risk-low { background: #2ecc7118; border-color: var(--green); color: var(--green); }
+    .risk-medium { background: #f39c1218; border-color: var(--yellow); color: var(--yellow); }
+    .risk-high { background: #e74c3c18; border-color: var(--red); color: var(--red); }
+
+    .rec-box {
+      margin-top: 8px;
+      padding: 11px 15px;
+      border-radius: 10px;
+      background: #00d4aa10;
+      border: 1px solid #00d4aa33;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--accent2);
+      line-height: 1.5;
+    }
+
+    .warn-box {
+      padding: 13px 16px;
+      border-radius: 10px;
+      border: 1px solid #f39c1244;
+      background: #f39c1210;
+      color: var(--yellow);
+      font-size: 13px;
+      font-weight: 600;
+      margin-bottom: 16px;
+      display: none;
+    }
+
+    /* Scenario bar */
+    .scenario-section { margin-bottom: 20px; }
+    .scenario-label { font-size: 12px; font-weight: 600; color: var(--muted); margin-bottom: 10px; }
+
+    .scenario-bar {
+      height: 34px;
+      border-radius: 10px;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      overflow: hidden;
+      display: flex;
+    }
+
+    .bar-low {
+      background: linear-gradient(90deg, #e74c3c88, #e74c3caa);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 10px; font-weight: 700; color: #fff; min-width: 70px;
+    }
+
+    .bar-base {
+      background: linear-gradient(90deg, #6c63ffaa, #6c63ffcc);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 10px; font-weight: 700; color: #fff; flex: 1;
+    }
+
+    .bar-high {
+      background: linear-gradient(90deg, #2ecc71aa, #2ecc71cc);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 10px; font-weight: 700; color: #fff; min-width: 70px;
+    }
+
+    .scenario-values { display: flex; justify-content: space-between; margin-top: 6px; }
+    .sv { text-align: center; }
+    .sv .sv-label { font-size: 10px; color: var(--muted); }
+    .sv .sv-val { font-size: 12px; font-weight: 700; }
+    .sv.low .sv-val { color: var(--red); }
+    .sv.base .sv-val { color: var(--accent); }
+    .sv.high .sv-val { color: var(--green); }
+
+    /* Expand simulator */
+    .expand-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: 10px;
+    }
+
+    .expand-card {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 14px;
+      text-align: center;
+      transition: border-color 0.2s;
+    }
+
+    .expand-card.current {
+      border-color: var(--accent);
+      background: #6c63ff12;
+    }
+
+    .expand-card .ec-scale { font-size: 10px; font-weight: 700; color: var(--muted); letter-spacing: 1px; margin-bottom: 6px; }
+    .expand-card.current .ec-scale { color: var(--accent); }
+    .expand-card .ec-bags { font-size: 13px; font-weight: 700; margin-bottom: 8px; }
+    .expand-card .ec-profit { font-size: 18px; font-weight: 800; color: var(--green); }
+    .expand-card .ec-rev { font-size: 11px; color: var(--muted); margin-top: 3px; }
+    .expand-card.current .ec-profit { color: var(--accent); }
+
+    /* Optimize result */
+    .optimize-result {
+      display: none;
+      margin-top: 14px;
+      padding: 15px 18px;
+      border-radius: 12px;
+      border: 1px solid #00d4aa44;
+      background: #00d4aa0d;
+    }
+
+    .opt-title { font-size: 10px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; color: var(--accent2); margin-bottom: 8px; }
+    .opt-body { font-size: 13px; font-weight: 600; color: var(--text); line-height: 1.7; }
+    .opt-body span { color: var(--accent2); }
+
+    /* Breakdown table */
+    .breakdown { width: 100%; border-collapse: collapse; font-size: 13px; }
+
+    .breakdown th {
+      text-align: left;
+      color: var(--muted);
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      padding: 7px 11px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .breakdown td { padding: 10px 11px; border-bottom: 1px solid #1e2235; }
+    .breakdown tr:last-child td { border-bottom: none; }
+    .breakdown .val { font-weight: 700; text-align: right; }
+    .breakdown .green { color: var(--green); }
+    .breakdown .red { color: var(--red); }
+    .breakdown .yellow { color: var(--yellow); }
+    .breakdown .blue { color: var(--accent2); }
+    .breakdown .purple { color: var(--accent); }
+
+    .breakdown .section-row td {
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      color: var(--muted);
+      padding-top: 16px;
+      padding-bottom: 5px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    /* Batch table */
+    .batch-table-wrap { overflow-x: auto; }
+
+    .batch-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 12px;
+      min-width: 600px;
+    }
+
+    .batch-table th {
+      text-align: left;
+      color: var(--muted);
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      padding: 8px 10px;
+      border-bottom: 1px solid var(--border);
+      white-space: nowrap;
+    }
+
+    .batch-table td { padding: 10px 10px; border-bottom: 1px solid #1e2235; vertical-align: middle; }
+    .batch-table tr:last-child td { border-bottom: none; }
+    .batch-table tr:hover td { background: #ffffff04; }
+
+    .pill {
+      display: inline-block;
+      padding: 3px 9px;
+      border-radius: 20px;
+      font-size: 11px;
+      font-weight: 700;
+    }
+
+    .pill-green { background: #2ecc7120; color: var(--green); border: 1px solid #2ecc7133; }
+    .pill-yellow { background: #f39c1220; color: var(--yellow); border: 1px solid #f39c1233; }
+    .pill-red { background: #e74c3c20; color: var(--red); border: 1px solid #e74c3c33; }
+    .pill-blue { background: #6c63ff20; color: var(--accent); border: 1px solid #6c63ff33; }
+
+    /* Insight card */
+    .insight-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+
+    .insight-item {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 16px;
+    }
+
+    .insight-item .i-label { font-size: 10px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; color: var(--muted); margin-bottom: 6px; }
+    .insight-item .i-value { font-size: 20px; font-weight: 800; }
+    .insight-item .i-sub { font-size: 11px; color: var(--muted); margin-top: 4px; }
+
+    /* Cycles visual */
+    .cycles-visual { display: flex; gap: 7px; flex-wrap: wrap; }
+
+    .cycle-dot {
+      width: 30px; height: 30px;
+      border-radius: 8px;
+      background: #6c63ff33;
+      border: 2px solid var(--accent);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 10px; font-weight: 700;
+      color: var(--accent);
+    }
+
+    .divider { height: 1px; background: var(--border); margin: 16px 0; }
+
+    .results-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+    }
+
+    .results-header h2 { font-size: 17px; font-weight: 700; }
+
+    .mushroom-tag {
+      background: #6c63ff22;
+      border: 1px solid #6c63ff55;
+      color: var(--accent);
+      font-size: 11px;
+      font-weight: 600;
+      padding: 3px 11px;
+      border-radius: 20px;
+    }
+
+    .reset-btn {
+      margin-left: auto;
+      background: none;
+      border: 1px solid var(--border);
+      color: var(--muted);
+      font-size: 12px;
+      padding: 7px 16px;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .reset-btn:hover { border-color: var(--accent); color: var(--text); }
+
+    .empty-state {
+      text-align: center;
+      padding: 48px 20px;
+      color: var(--muted);
+    }
+
+    .empty-state .es-icon { font-size: 48px; margin-bottom: 12px; }
+    .empty-state .es-text { font-size: 14px; font-weight: 500; }
+    .empty-state .es-sub { font-size: 12px; margin-top: 6px; }
+
+    .save-success {
+      display: none;
+      padding: 10px 16px;
+      border-radius: 10px;
+      background: #2ecc7115;
+      border: 1px solid #2ecc7133;
+      color: var(--green);
+      font-size: 13px;
+      font-weight: 600;
+      margin-top: 12px;
+      text-align: center;
+    }
+
+    /* ── Brand corner ── */
+    .brand-corner {
+      position: fixed;
+      top: 16px;
+      right: 20px;
+      text-align: center;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 10px 14px;
+      z-index: 200;
+      transition: border-color 0.2s;
+    }
+
+    .brand-corner:hover { border-color: var(--accent); }
+
+    .brand-mushroom { width: 40px; height: 40px; margin: 0 auto 6px; }
+
+    .brand-name {
+      font-size: 9px;
+      font-weight: 800;
+      letter-spacing: 0.8px;
+      text-transform: uppercase;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      white-space: nowrap;
+    }
+
+    /* ── Footer ── */
+    .site-footer {
+      text-align: center;
+      padding: 40px 16px 24px;
+      border-top: 1px solid var(--border);
+      margin-top: 20px;
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .site-footer .footer-inner {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+
+    .site-footer .footer-dot { color: var(--border); }
+
+    .site-footer strong { color: var(--text); font-weight: 700; }
+
+    .site-footer .footer-brand {
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      font-weight: 700;
+    }
+
+    @media (max-width: 600px) {
+      .card { padding: 18px 14px; }
+      .stat-value { font-size: 20px; }
+      .efficiency-hero .eff-value { font-size: 56px; }
+      .btn-row { grid-template-columns: 1fr; }
+      .brand-corner { top: 10px; right: 10px; padding: 8px 10px; }
+      .brand-mushroom { width: 30px; height: 30px; }
+      .brand-name { font-size: 8px; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- Brand corner -->
+<div class="brand-corner">
+  <svg class="brand-mushroom" viewBox="0 0 50 58" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <linearGradient id="mgrad" x1="3" y1="3" x2="47" y2="58" gradientUnits="userSpaceOnUse">
+        <stop offset="0%" stop-color="#6c63ff"/>
+        <stop offset="100%" stop-color="#00d4aa"/>
+      </linearGradient>
+    </defs>
+    <path d="M25 4C11 4 3 15 3 23C3 31 9 37 18 38.5L19 53C19 55.5 21 57 25 57C29 57 31 55.5 31 53L32 38.5C41 37 47 31 47 23C47 15 39 4 25 4Z" fill="url(#mgrad)"/>
+    <circle cx="15" cy="19" r="3.5" fill="white" opacity="0.35"/>
+    <circle cx="30" cy="14" r="2.5" fill="white" opacity="0.35"/>
+    <circle cx="35" cy="24" r="2" fill="white" opacity="0.35"/>
+    <ellipse cx="25" cy="38.5" rx="7" ry="1.5" fill="white" opacity="0.08"/>
+  </svg>
+  <div class="brand-name">JyväSSisu Fungi</div>
+</div>
+
+<header>
+  <div class="badge">AgriTech Decision Platform</div>
+  <h1>Yield Predictor Pro</h1>
+  <p>Predict, track, and optimize your mushroom farm performance</p>
+</header>
+
+<div class="container">
+
+  <!-- Tab navigation -->
+  <div class="tab-bar">
+    <button class="tab-btn active" data-tab="predictor" onclick="showTab('predictor')">🔮 Predictor</button>
+    <button class="tab-btn tab-farm" data-tab="realfarm" onclick="showTab('realfarm')">🌾 Real Farm</button>
+    <button class="tab-btn tab-history" data-tab="history" onclick="showTab('history')">📋 Batch History</button>
+  </div>
+
+  <!-- ══════════════════════════════════════════════
+       TAB 1 — PREDICTOR
+  ══════════════════════════════════════════════ -->
+  <div id="tab-predictor" class="tab-panel active">
+
+    <div class="card">
+      <div class="card-title">Configure Your Grow</div>
+
+      <label style="margin-bottom:10px;">Mushroom Type</label>
+      <div class="mushroom-grid">
+        <div class="mushroom-option">
+          <input type="radio" name="type" id="lion_mane" value="lion_mane" checked />
+          <label for="lion_mane">
+            <span class="emoji">🦁</span>
+            <span class="name">Lion's Mane</span>
+            <span class="meta">€30/kg · 3 cycles</span>
+          </label>
+        </div>
+        <div class="mushroom-option">
+          <input type="radio" name="type" id="blue_oyster" value="blue_oyster" />
+          <label for="blue_oyster">
+            <span class="emoji">🌊</span>
+            <span class="name">Blue Oyster</span>
+            <span class="meta">€12/kg · 4 cycles</span>
+          </label>
+        </div>
+        <div class="mushroom-option">
+          <input type="radio" name="type" id="king_oyster" value="king_oyster" />
+          <label for="king_oyster">
+            <span class="emoji">👑</span>
+            <span class="name">King Oyster</span>
+            <span class="meta">€22/kg · 3 cycles</span>
+          </label>
+        </div>
+        <div class="mushroom-option">
+          <input type="radio" name="type" id="enoki" value="enoki" />
+          <label for="enoki">
+            <span class="emoji">🍄</span>
+            <span class="name">Enoki</span>
+            <span class="meta">€18/kg · 2 cycles</span>
+          </label>
+        </div>
+        <div class="mushroom-option">
+          <input type="radio" name="type" id="shiitake" value="shiitake" />
+          <label for="shiitake">
+            <span class="emoji">🌿</span>
+            <span class="name">Shiitake</span>
+            <span class="meta">€20/kg · 2 cycles</span>
+          </label>
+        </div>
+      </div>
+
+      <div class="form-grid">
+        <div>
+          <label for="bags">Number of Bags</label>
+          <input type="number" id="bags" min="1" max="10000" placeholder="e.g. 300" />
+        </div>
+        <div>
+          <label for="bagWeight">Bag Weight</label>
+          <select id="bagWeight">
+            <option value="2.5">2.5 kg (standard)</option>
+            <option value="3" selected>3.0 kg (medium)</option>
+            <option value="4">4.0 kg (large)</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="btn-row">
+        <button class="btn" onclick="calculate()">Calculate Yield &amp; Revenue</button>
+        <button class="btn-outline" onclick="optimizeProfit()">Optimize Profit</button>
+      </div>
+
+      <div class="optimize-result" id="optimize-result">
+        <div class="opt-title">Profit Optimizer</div>
+        <div class="opt-body" id="optimize-body"></div>
+      </div>
+    </div>
+
+    <!-- Results -->
+    <div id="p-results" style="display:none;">
+
+      <div id="p-warn-banner" class="warn-box"></div>
+
+      <!-- Summary card -->
+      <div class="card">
+        <div class="results-header">
+          <h2>3-Month Forecast</h2>
+          <span class="mushroom-tag" id="p-label"></span>
+          <button class="reset-btn" onclick="resetPredictor()">Reset</button>
+        </div>
+
+        <div class="stats-grid">
+          <div class="stat blue">
+            <div class="stat-label">Total Production</div>
+            <div class="stat-value" id="p-production"></div>
+            <div class="stat-sub" id="p-per-cycle"></div>
+          </div>
+          <div class="stat blue">
+            <div class="stat-label">Monthly Production</div>
+            <div class="stat-value" id="p-monthly-prod"></div>
+            <div class="stat-sub">avg per month</div>
+          </div>
+          <div class="stat green">
+            <div class="stat-label">Total Revenue</div>
+            <div class="stat-value" id="p-revenue"></div>
+            <div class="stat-sub" id="p-price"></div>
+          </div>
+          <div class="stat green">
+            <div class="stat-label">Monthly Revenue</div>
+            <div class="stat-value" id="p-monthly-rev"></div>
+            <div class="stat-sub">avg per month</div>
+          </div>
+          <div class="stat red">
+            <div class="stat-label">Total Cost</div>
+            <div class="stat-value" id="p-cost"></div>
+            <div class="stat-sub">€2.50/bag × cycles</div>
+          </div>
+          <div class="stat purple">
+            <div class="stat-label">Net Profit</div>
+            <div class="stat-value" id="p-profit"></div>
+            <div class="stat-sub" id="p-margin"></div>
+          </div>
+          <div class="stat yellow">
+            <div class="stat-label">Break-even</div>
+            <div class="stat-value" id="p-breakeven"></div>
+            <div class="stat-sub">kg to cover costs</div>
+          </div>
+          <div class="stat yellow">
+            <div class="stat-label">Cycles / 3 Mo.</div>
+            <div class="stat-value" id="p-cycles"></div>
+            <div class="stat-sub">production runs</div>
+          </div>
+        </div>
+
+        <div class="scenario-section">
+          <div class="scenario-label">Production Range — Worst / Expected / Best</div>
+          <div class="scenario-bar">
+            <div class="bar-low" id="p-bar-low"></div>
+            <div class="bar-base" id="p-bar-base"></div>
+            <div class="bar-high" id="p-bar-high"></div>
+          </div>
+          <div class="scenario-values">
+            <div class="sv low">
+              <div class="sv-label">Worst (−15%)</div>
+              <div class="sv-val" id="p-s-low"></div>
+            </div>
+            <div class="sv base">
+              <div class="sv-label">Expected</div>
+              <div class="sv-val" id="p-s-base"></div>
+            </div>
+            <div class="sv high">
+              <div class="sv-label">Best (+15%)</div>
+              <div class="sv-val" id="p-s-high"></div>
+            </div>
+          </div>
+        </div>
+
+        <div id="p-risk"></div>
+      </div>
+
+      <!-- Expansion simulator -->
+      <div class="card" id="p-expansion">
+        <div class="card-title">Simulate Expansion</div>
+        <div style="font-size:12px;color:var(--muted);margin-bottom:14px;">What happens to your profit if you scale bag count?</div>
+        <div class="expand-grid" id="expand-grid"></div>
+      </div>
+
+      <!-- Breakdown -->
+      <div class="card">
+        <div class="card-title">Full Breakdown</div>
+        <div style="margin-bottom:14px;">
+          <div style="font-size:12px;color:var(--muted);margin-bottom:8px;">Production cycles in 3-month window</div>
+          <div class="cycles-visual" id="p-cycles-visual"></div>
+        </div>
+        <div class="divider"></div>
+        <table class="breakdown">
+          <thead><tr><th>Item</th><th style="text-align:right">Value</th></tr></thead>
+          <tbody id="p-breakdown-body"></tbody>
+        </table>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════════
+       TAB 2 — REAL FARM MODE
+  ══════════════════════════════════════════════ -->
+  <div id="tab-realfarm" class="tab-panel">
+
+    <div class="card">
+      <div class="card-title teal">Real Farm Data Entry</div>
+      <div style="font-size:13px;color:var(--muted);margin-bottom:18px;">Enter actual results from a completed cycle to analyze your real performance.</div>
+
+      <div class="form-grid-3">
+        <div>
+          <label for="rf-type">Mushroom Type</label>
+          <select id="rf-type">
+            <option value="lion_mane">🦁 Lion's Mane</option>
+            <option value="blue_oyster">🌊 Blue Oyster</option>
+            <option value="king_oyster">👑 King Oyster</option>
+            <option value="enoki">🍄 Enoki</option>
+            <option value="shiitake">🌿 Shiitake</option>
+          </select>
+        </div>
+        <div>
+          <label for="rf-bags">Number of Bags</label>
+          <input type="number" id="rf-bags" min="1" placeholder="e.g. 300" />
+        </div>
+        <div>
+          <label for="rf-weight">Bag Weight</label>
+          <select id="rf-weight">
+            <option value="2.5">2.5 kg</option>
+            <option value="3" selected>3.0 kg</option>
+            <option value="4">4.0 kg</option>
+          </select>
+        </div>
+        <div>
+          <label for="rf-actual">Actual Harvested (kg)</label>
+          <input type="number" id="rf-actual" step="0.1" min="0" placeholder="e.g. 380" />
+        </div>
+        <div>
+          <label for="rf-lost">Lost / Contaminated Bags</label>
+          <input type="number" id="rf-lost" min="0" placeholder="e.g. 12" />
+        </div>
+        <div>
+          <label for="rf-days">Cycle Duration (days)</label>
+          <input type="number" id="rf-days" min="1" placeholder="e.g. 45" />
+        </div>
+      </div>
+
+      <button class="btn-teal" onclick="analyzeRealFarm()">Analyze Performance</button>
+    </div>
+
+    <div id="rf-results" style="display:none;">
+
+      <!-- Efficiency hero -->
+      <div class="card">
+        <div class="results-header">
+          <h2>Performance Report</h2>
+          <span class="mushroom-tag" id="rf-label" style="border-color:#00d4aa55;background:#00d4aa15;color:var(--accent2);"></span>
+          <button class="reset-btn" onclick="resetRealFarm()">Reset</button>
+        </div>
+
+        <div class="efficiency-hero">
+          <div class="eff-label">Operational Efficiency</div>
+          <div class="eff-value" id="rf-eff-value"></div>
+          <div class="eff-grade" id="rf-eff-grade"></div>
+        </div>
+
+        <div class="stats-grid">
+          <div class="stat green">
+            <div class="stat-label">Actual Production</div>
+            <div class="stat-value" id="rf-actual-kg"></div>
+            <div class="stat-sub" id="rf-expected-sub"></div>
+          </div>
+          <div class="stat green">
+            <div class="stat-label">Actual Revenue</div>
+            <div class="stat-value" id="rf-actual-rev"></div>
+            <div class="stat-sub" id="rf-rev-gap"></div>
+          </div>
+          <div class="stat red">
+            <div class="stat-label">Contamination Rate</div>
+            <div class="stat-value" id="rf-contam-rate"></div>
+            <div class="stat-sub" id="rf-contam-sub"></div>
+          </div>
+          <div class="stat yellow">
+            <div class="stat-label">Cycle Duration</div>
+            <div class="stat-value" id="rf-days-val"></div>
+            <div class="stat-sub" id="rf-days-sub"></div>
+          </div>
+        </div>
+
+        <!-- Expected vs Actual comparison bars -->
+        <div class="compare-section">
+          <div class="scenario-label">Expected vs Actual Production</div>
+          <div class="compare-row">
+            <div class="compare-row-label">
+              <span class="cr-name">Expected</span>
+              <span class="cr-val" id="rf-exp-label" style="color:var(--accent)"></span>
+            </div>
+            <div class="compare-track">
+              <div class="compare-fill fill-expected" id="rf-bar-exp" style="width:100%"></div>
+            </div>
+          </div>
+          <div class="compare-row" style="margin-top:8px;">
+            <div class="compare-row-label">
+              <span class="cr-name">Actual</span>
+              <span class="cr-val" id="rf-act-label"></span>
+            </div>
+            <div class="compare-track">
+              <div class="compare-fill" id="rf-bar-act" style="width:100%"></div>
+            </div>
+          </div>
+        </div>
+
+        <div id="rf-risk-box"></div>
+
+        <div style="margin-top:16px;display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
+          <button class="btn-sm" onclick="saveBatch()" style="border-color:#00d4aa44;color:var(--accent2);">Save to Batch History</button>
+          <button class="btn-sm" onclick="showTab('history')">View Batch History</button>
+        </div>
+        <div class="save-success" id="rf-save-msg">Batch saved to history successfully.</div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════════
+       TAB 3 — BATCH HISTORY
+  ══════════════════════════════════════════════ -->
+  <div id="tab-history" class="tab-panel">
+
+    <!-- Insights panel (hidden until 2+ batches) -->
+    <div class="card" id="hist-insights" style="display:none;">
+      <div class="card-title yellow">Farm Intelligence</div>
+      <div class="insight-grid" id="insight-grid"></div>
+      <div class="rec-box" id="insight-rec" style="color:var(--yellow);background:#f39c1210;border-color:#f39c1233;"></div>
+    </div>
+
+    <!-- Batch list -->
+    <div class="card">
+      <div class="card-title yellow" style="margin-bottom:14px;">
+        Batch History
+        <span id="hist-count" style="font-size:11px;color:var(--muted);letter-spacing:0;text-transform:none;font-weight:500;"></span>
+      </div>
+
+      <div id="hist-empty" class="empty-state">
+        <div class="es-icon">📋</div>
+        <div class="es-text">No batches recorded yet</div>
+        <div class="es-sub">Use Real Farm mode to analyze a cycle, then save it here</div>
+      </div>
+
+      <div id="hist-table-wrap" class="batch-table-wrap" style="display:none;">
+        <table class="batch-table">
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Date</th>
+              <th>Type</th>
+              <th>Bags</th>
+              <th>Expected</th>
+              <th>Actual</th>
+              <th>Efficiency</th>
+              <th>Contamination</th>
+              <th>Days</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody id="hist-tbody"></tbody>
+        </table>
+      </div>
+
+      <div id="hist-actions" style="display:none;margin-top:16px;display:none;gap:10px;flex-wrap:wrap;">
+        <button class="btn-sm" onclick="exportCSV()">Export CSV</button>
+        <button class="btn-danger" onclick="clearHistory()">Clear All</button>
+      </div>
+    </div>
+
+  </div>
+
+</div>
+
+<script>
+  // ── Shared data ──────────────────────────────────────────────
+
+  const baseYield = {
+    lion_mane: 0.18,
+    blue_oyster: 0.25,
+    king_oyster: 0.20,
+    enoki: 0.18,
+    shiitake: 0.22
+  };
+
+  const cycleCount = {
+    lion_mane: 3,
+    blue_oyster: 4,
+    king_oyster: 3,
+    enoki: 2,
+    shiitake: 2
+  };
+
+  const pricePerKg = {
+    lion_mane: 30,
+    blue_oyster: 12,
+    king_oyster: 22,
+    enoki: 18,
+    shiitake: 20
+  };
+
+  const expectedDays = {
+    lion_mane: 30,
+    blue_oyster: 21,
+    king_oyster: 28,
+    enoki: 45,
+    shiitake: 42
+  };
+
+  const names = {
+    lion_mane: "Lion's Mane",
+    blue_oyster: "Blue Oyster",
+    king_oyster: "King Oyster",
+    enoki: "Enoki",
+    shiitake: "Shiitake"
+  };
+
+  const emojis = {
+    lion_mane: "🦁",
+    blue_oyster: "🌊",
+    king_oyster: "👑",
+    enoki: "🍄",
+    shiitake: "🌿"
+  };
+
+  const bagWeights = [2.5, 3.0, 4.0];
+
+  // ── Tab switching ────────────────────────────────────────────
+
+  function showTab(name) {
+    document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.getElementById('tab-' + name).classList.add('active');
+    document.querySelector(`[data-tab="${name}"]`).classList.add('active');
+    if (name === 'history') renderHistory();
+  }
+
+  // ── Formatters ───────────────────────────────────────────────
+
+  function fmt(n) { return n.toFixed(1).replace(/\B(?=(\d{3})+(?!\d))/g, ','); }
+  function fmtEur(n) { return '€' + Math.round(n).toLocaleString(); }
+
+  // ── Shared computation ───────────────────────────────────────
+
+  function computeProfit(type, bags, weight) {
+    const yieldPerCycle = bags * weight * baseYield[type];
+    const total = yieldPerCycle * cycleCount[type];
+    const cost = bags * 2.5 * cycleCount[type];
+    const revenue = total * pricePerKg[type];
+    return { profit: revenue - cost, revenue, total, yieldPerCycle };
+  }
+
+  // ── Risk & recommendation ────────────────────────────────────
+
+  function getRisk(type, bags) {
+    if (type === 'lion_mane' && bags > 500)
+      return { level: 'medium', text: "Medium Risk: Lion's Mane is highly sensitive to CO₂ and contamination at scale (>500 bags). Reduce bag density or upgrade air exchange." };
+    if (type === 'lion_mane')
+      return { level: 'medium', text: "Medium Risk: Lion's Mane requires precise environmental control — CO₂ below 800 ppm and humidity between 85–95%." };
+    if (type === 'blue_oyster')
+      return { level: 'low', text: "Low Risk: Blue Oyster is highly resilient, fast-colonising, and forgiving in varied conditions. Ideal for scaling." };
+    if (type === 'enoki')
+      return { level: 'high', text: "High Risk: Enoki requires near-freezing temperatures (10–15°C) and very low CO₂. Cold-chain infrastructure is mandatory." };
+    if (type === 'king_oyster')
+      return { level: 'medium', text: "Moderate Risk: King Oyster needs consistent low temperatures and longer colonisation time." };
+    if (type === 'shiitake')
+      return { level: 'medium', text: "Moderate Risk: Shiitake requires a cold-shock trigger and precise moisture management." };
+    return { level: 'medium', text: "Moderate Risk: Requires controlled environment." };
+  }
+
+  function getRecommendation(type, bags, margin) {
+    const lines = [];
+    if (type === 'lion_mane' && bags > 500) lines.push("Reduce bag density or split across two rooms to lower contamination pressure.");
+    else if (type === 'lion_mane') lines.push("Invest in a CO₂ monitor — this single device protects your entire profit margin.");
+    else if (type === 'blue_oyster') lines.push("Production is scalable. You can safely increase bag count or add a 5th cycle with substrate recycling.");
+    else if (type === 'enoki') lines.push("Pilot with a small cold-chain batch before scaling. Enoki economics improve dramatically at volume.");
+    else if (type === 'king_oyster') lines.push("Supplementing substrate with wheat bran can boost yield rate by 10–15%.");
+    else if (type === 'shiitake') lines.push("A consistent cold-shock soak protocol is the single biggest yield lever for Shiitake.");
+    if (margin < 30) lines.push("Margin below 30% — review substrate sourcing or negotiate bulk discounts.");
+    else if (margin > 70) lines.push("Strong margin. Reinvesting profit into a second grow room could multiply returns.");
+    return lines.join(" ");
+  }
+
+  // ── TAB 1: Predictor ─────────────────────────────────────────
+
+  let lastCalc = null;
+
+  function calculate() {
+    const bags = parseInt(document.getElementById('bags').value);
+    const type = document.querySelector('input[name="type"]:checked').value;
+    const bagWeight = parseFloat(document.getElementById('bagWeight').value);
+
+    if (!bags || bags < 1) {
+      flash('bags');
+      return;
+    }
+
+    const yieldPerCycle = bags * bagWeight * baseYield[type];
+    const numCycles = cycleCount[type];
+    const total = yieldPerCycle * numCycles;
+    const totalCost = bags * 2.5 * numCycles;
+    const revenue = total * pricePerKg[type];
+    const profit = revenue - totalCost;
+    const margin = revenue > 0 ? profit / revenue * 100 : 0;
+    const breakEvenKg = totalCost / pricePerKg[type];
+    const monthlyProd = total / 3;
+    const monthlyRev = revenue / 3;
+    const low = total * 0.85;
+    const high = total * 1.15;
+    const revLow = low * pricePerKg[type];
+    const revHigh = high * pricePerKg[type];
+
+    lastCalc = { bags, type, bagWeight, yieldPerCycle, numCycles, total, totalCost, revenue, profit, margin };
+
+    // Warning banner
+    const banner = document.getElementById('p-warn-banner');
+    if (margin < 30) {
+      banner.style.display = 'block';
+      banner.textContent = '⚠️ Low margin alert: Profit margin is ' + margin.toFixed(1) + '%. Consider adjusting pricing, substrate costs, or switching species.';
+    } else {
+      banner.style.display = 'none';
+    }
+
+    document.getElementById('p-label').textContent = emojis[type] + ' ' + names[type] + ' · ' + bagWeight + 'kg';
+
+    document.getElementById('p-production').textContent = fmt(total) + ' kg';
+    document.getElementById('p-per-cycle').textContent = fmt(yieldPerCycle) + ' kg/cycle';
+    document.getElementById('p-monthly-prod').textContent = fmt(monthlyProd) + ' kg';
+    document.getElementById('p-revenue').textContent = fmtEur(revenue);
+    document.getElementById('p-price').textContent = '@ €' + pricePerKg[type] + '/kg';
+    document.getElementById('p-monthly-rev').textContent = fmtEur(monthlyRev);
+    document.getElementById('p-cost').textContent = fmtEur(totalCost);
+    document.getElementById('p-profit').textContent = fmtEur(profit);
+    document.getElementById('p-margin').textContent = margin.toFixed(1) + '% margin';
+    document.getElementById('p-breakeven').textContent = fmt(breakEvenKg) + ' kg';
+    document.getElementById('p-cycles').textContent = numCycles;
+
+    document.getElementById('p-bar-low').textContent = fmt(low) + ' kg';
+    document.getElementById('p-bar-base').textContent = fmt(total) + ' kg';
+    document.getElementById('p-bar-high').textContent = fmt(high) + ' kg';
+    document.getElementById('p-s-low').textContent = fmt(low) + ' kg (' + fmtEur(revLow) + ')';
+    document.getElementById('p-s-base').textContent = fmt(total) + ' kg (' + fmtEur(revenue) + ')';
+    document.getElementById('p-s-high').textContent = fmt(high) + ' kg (' + fmtEur(revHigh) + ')';
+
+    const risk = getRisk(type, bags);
+    const rec = getRecommendation(type, bags, margin);
+    document.getElementById('p-risk').innerHTML = `
+      <div style="margin-top:16px;">
+        <div class="scenario-label">Risk Assessment</div>
+        <div class="risk-box risk-${risk.level}">${risk.text}</div>
+        ${rec ? `<div class="rec-box">💡 ${rec}</div>` : ''}
+      </div>
+    `;
+
+    // Cycles visual
+    const viz = document.getElementById('p-cycles-visual');
+    viz.innerHTML = '';
+    for (let i = 1; i <= numCycles; i++) {
+      const d = document.createElement('div');
+      d.className = 'cycle-dot';
+      d.textContent = 'C' + i;
+      viz.appendChild(d);
+    }
+
+    // Breakdown table
+    const pc = profit >= 0 ? 'green' : 'red';
+    const beClass = breakEvenKg <= total ? 'green' : 'red';
+    document.getElementById('p-breakdown-body').innerHTML = `
+      <tr class="section-row"><td colspan="2">Setup</td></tr>
+      <tr><td>Bags</td><td class="val blue">${bags.toLocaleString()}</td></tr>
+      <tr><td>Bag weight</td><td class="val">${bagWeight} kg</td></tr>
+      <tr><td>Yield efficiency</td><td class="val">${(baseYield[type] * 100).toFixed(0)}% of bag mass</td></tr>
+      <tr class="section-row"><td colspan="2">Production</td></tr>
+      <tr><td>Yield per bag/cycle</td><td class="val">${fmt(bagWeight * baseYield[type])} kg</td></tr>
+      <tr><td>Yield per cycle (all bags)</td><td class="val">${fmt(yieldPerCycle)} kg</td></tr>
+      <tr><td>Cycles in 3 months</td><td class="val">${numCycles}</td></tr>
+      <tr><td>Total production</td><td class="val blue">${fmt(total)} kg</td></tr>
+      <tr><td>Monthly production</td><td class="val blue">${fmt(monthlyProd)} kg/mo</td></tr>
+      <tr class="section-row"><td colspan="2">Financials</td></tr>
+      <tr><td>Market price</td><td class="val">€${pricePerKg[type]}/kg</td></tr>
+      <tr><td>Gross revenue</td><td class="val green">${fmtEur(revenue)}</td></tr>
+      <tr><td>Monthly revenue</td><td class="val green">${fmtEur(monthlyRev)}/mo</td></tr>
+      <tr><td>Substrate cost</td><td class="val red">${fmtEur(totalCost)}</td></tr>
+      <tr><td>Net profit</td><td class="val ${pc}">${fmtEur(profit)}</td></tr>
+      <tr><td>Profit margin</td><td class="val ${pc}">${margin.toFixed(1)}%</td></tr>
+      <tr><td>Break-even point</td><td class="val ${beClass}">${fmt(breakEvenKg)} kg (${(breakEvenKg / total * 100).toFixed(1)}% of capacity)</td></tr>
+      <tr class="section-row"><td colspan="2">Scenarios</td></tr>
+      <tr><td>Worst case (−15%)</td><td class="val red">${fmt(low)} kg — ${fmtEur(revLow)}</td></tr>
+      <tr><td>Expected</td><td class="val purple">${fmt(total)} kg — ${fmtEur(revenue)}</td></tr>
+      <tr><td>Best case (+15%)</td><td class="val green">${fmt(high)} kg — ${fmtEur(revHigh)}</td></tr>
+    `;
+
+    // Expansion simulator
+    renderExpansion(bags, type, bagWeight);
+
+    const resultsEl = document.getElementById('p-results');
+    resultsEl.style.display = 'block';
+    resultsEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+
+  function renderExpansion(bags, type, bagWeight) {
+    const scales = [0.5, 1, 1.5, 2, 3];
+    const grid = document.getElementById('expand-grid');
+    grid.innerHTML = '';
+    scales.forEach(scale => {
+      const b = Math.round(bags * scale);
+      const r = computeProfit(type, b, bagWeight);
+      const isCurrent = scale === 1;
+      const div = document.createElement('div');
+      div.className = 'expand-card' + (isCurrent ? ' current' : '');
+      div.innerHTML = `
+        <div class="ec-scale">${scale === 1 ? '1× CURRENT' : scale + '× SCALE'}</div>
+        <div class="ec-bags">${b.toLocaleString()} bags</div>
+        <div class="ec-profit">${fmtEur(r.profit)}</div>
+        <div class="ec-rev">${fmtEur(r.revenue)} revenue</div>
+      `;
+      grid.appendChild(div);
+    });
+  }
+
+  function optimizeProfit() {
+    const bags = parseInt(document.getElementById('bags').value);
+    if (!bags || bags < 1) { flash('bags'); return; }
+
+    let best = null, bestProfit = -Infinity;
+    let second = null, secondProfit = -Infinity;
+
+    for (const type of Object.keys(baseYield)) {
+      for (const weight of bagWeights) {
+        const r = computeProfit(type, bags, weight);
+        if (r.profit > bestProfit) {
+          bestProfit = r.profit;
+          best = { type, weight, ...r };
+        }
+      }
+    }
+
+    for (const type of Object.keys(baseYield)) {
+      for (const weight of bagWeights) {
+        if (type === best.type && weight === best.weight) continue;
+        const r = computeProfit(type, bags, weight);
+        if (r.profit > secondProfit) {
+          secondProfit = r.profit;
+          second = { type, weight, ...r };
+        }
+      }
+    }
+
+    const margin = best.revenue > 0 ? (best.profit / best.revenue * 100) : 0;
+    const diff = bestProfit - secondProfit;
+
+    const el = document.getElementById('optimize-result');
+    document.getElementById('optimize-body').innerHTML =
+      `Best combination for <span>${bags.toLocaleString()} bags</span>:<br>` +
+      `<span>${emojis[best.type]} ${names[best.type]}</span> with <span>${best.weight} kg bags</span><br>` +
+      `→ Profit: <span>${fmtEur(bestProfit)}</span> · Revenue: <span>${fmtEur(best.revenue)}</span> · Margin: <span>${margin.toFixed(1)}%</span><br>` +
+      `<span style="color:var(--muted);font-weight:500;font-size:11px;">` +
+        `Runner-up: ${emojis[second.type]} ${names[second.type]} @ ${second.weight}kg — ${fmtEur(secondProfit)} profit (${fmtEur(diff)} less)` +
+      `</span>`;
+    el.style.display = 'block';
+  }
+
+  function resetPredictor() {
+    document.getElementById('bags').value = '';
+    document.getElementById('p-results').style.display = 'none';
+    document.getElementById('optimize-result').style.display = 'none';
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  // ── TAB 2: Real Farm ─────────────────────────────────────────
+
+  let pendingBatch = null;
+
+  function analyzeRealFarm() {
+    const type = document.getElementById('rf-type').value;
+    const bags = parseInt(document.getElementById('rf-bags').value);
+    const weight = parseFloat(document.getElementById('rf-weight').value);
+    const actual = parseFloat(document.getElementById('rf-actual').value);
+    const lostBags = parseInt(document.getElementById('rf-lost').value) || 0;
+    const days = parseInt(document.getElementById('rf-days').value) || null;
+
+    if (!bags || bags < 1) { flashEl('rf-bags'); return; }
+    if (isNaN(actual) || actual < 0) { flashEl('rf-actual'); return; }
+
+    const expected = bags * weight * baseYield[type];
+    const efficiency = Math.min((actual / expected) * 100, 200);
+    const contamRate = (lostBags / bags) * 100;
+    const actualRevenue = actual * pricePerKg[type];
+    const expectedRevenue = expected * pricePerKg[type];
+    const revGap = expectedRevenue - actualRevenue;
+    const expDays = expectedDays[type];
+
+    pendingBatch = { type, bags, weight, expected, actual, lostBags, contamRate, efficiency, days, date: new Date().toISOString().split('T')[0] };
+
+    document.getElementById('rf-label').textContent = emojis[type] + ' ' + names[type];
+
+    // Efficiency display
+    const effEl = document.getElementById('rf-eff-value');
+    const gradeEl = document.getElementById('rf-eff-grade');
+    effEl.textContent = efficiency.toFixed(1) + '%';
+
+    let effColor, effGrade;
+    if (efficiency >= 95) { effColor = 'var(--green)'; effGrade = 'Outstanding performance'; }
+    else if (efficiency >= 85) { effColor = 'var(--green)'; effGrade = 'Performing well'; }
+    else if (efficiency >= 70) { effColor = 'var(--yellow)'; effGrade = 'Average — room for improvement'; }
+    else if (efficiency >= 50) { effColor = 'var(--orange)'; effGrade = 'Below average — review conditions'; }
+    else { effColor = 'var(--red)'; effGrade = 'Critical — investigate immediately'; }
+
+    effEl.style.color = effColor;
+    gradeEl.style.color = effColor;
+    gradeEl.textContent = effGrade;
+
+    // Stats
+    document.getElementById('rf-actual-kg').textContent = fmt(actual) + ' kg';
+    document.getElementById('rf-expected-sub').textContent = 'Expected: ' + fmt(expected) + ' kg';
+    document.getElementById('rf-actual-rev').textContent = fmtEur(actualRevenue);
+    document.getElementById('rf-rev-gap').textContent = revGap > 0 ? '−' + fmtEur(revGap) + ' vs expected' : '+' + fmtEur(-revGap) + ' vs expected';
+    document.getElementById('rf-rev-gap').style.color = revGap > 0 ? 'var(--red)' : 'var(--green)';
+
+    // Contamination
+    const contamEl = document.getElementById('rf-contam-rate');
+    const contamSub = document.getElementById('rf-contam-sub');
+    contamEl.textContent = contamRate.toFixed(1) + '%';
+    let contamColor, contamMsg;
+    if (contamRate === 0) { contamColor = 'var(--green)'; contamMsg = 'No contamination'; }
+    else if (contamRate < 2) { contamColor = 'var(--green)'; contamMsg = 'Excellent — sterile protocol is working'; }
+    else if (contamRate < 5) { contamColor = 'var(--yellow)'; contamMsg = 'Good — normal range, maintain protocols'; }
+    else if (contamRate < 10) { contamColor = 'var(--yellow)'; contamMsg = 'Warning — review sterilization procedures'; }
+    else if (contamRate < 20) { contamColor = 'var(--red)'; contamMsg = 'High — investigate contamination source'; }
+    else { contamColor = 'var(--red)'; contamMsg = 'Critical — stop production and deep clean'; }
+    contamEl.style.color = contamColor;
+    contamSub.textContent = contamMsg;
+
+    // Cycle days
+    const daysEl = document.getElementById('rf-days-val');
+    const daysSub = document.getElementById('rf-days-sub');
+    if (days) {
+      daysEl.textContent = days + ' days';
+      const diff = days - expDays;
+      daysSub.textContent = diff === 0 ? 'On schedule' : (diff > 0 ? '+' + diff + ' days vs expected (' + expDays + 'd)' : diff + ' days vs expected (' + expDays + 'd)');
+      daysSub.style.color = Math.abs(diff) <= 3 ? 'var(--muted)' : diff > 0 ? 'var(--yellow)' : 'var(--green)';
+    } else {
+      daysEl.textContent = '—';
+      daysSub.textContent = 'Not provided';
+    }
+
+    // Comparison bars
+    const actPct = Math.min((actual / expected) * 100, 100).toFixed(1);
+    document.getElementById('rf-exp-label').textContent = fmt(expected) + ' kg';
+    document.getElementById('rf-act-label').textContent = fmt(actual) + ' kg (' + actPct + '%)';
+    document.getElementById('rf-act-label').style.color = efficiency >= 85 ? 'var(--green)' : efficiency >= 70 ? 'var(--yellow)' : 'var(--red)';
+    document.getElementById('rf-bar-exp').style.width = '100%';
+    const actFillClass = efficiency >= 85 ? 'fill-actual-good' : efficiency >= 70 ? 'fill-actual-warn' : 'fill-actual-bad';
+    const actBar = document.getElementById('rf-bar-act');
+    actBar.style.width = actPct + '%';
+    actBar.className = 'compare-fill ' + actFillClass;
+
+    // Risk + operational advice
+    let opAdvice = '';
+    if (efficiency < 70) opAdvice = "Efficiency is critically low. Check substrate quality, humidity levels, and sterilization logs for this batch.";
+    else if (efficiency < 85) opAdvice = "Performance is below optimal. Verify CO₂ levels, temperature stability, and watering frequency during this cycle.";
+    else opAdvice = "Performance is good. Document your conditions for this cycle as a reference for future batches.";
+    if (contamRate >= 5) opAdvice += " High contamination detected — inspect autoclave performance and inoculation area hygiene.";
+
+    document.getElementById('rf-risk-box').innerHTML = `
+      <div style="margin-top:14px;">
+        <div class="scenario-label">Operational Assessment</div>
+        <div class="rec-box">💡 ${opAdvice}</div>
+      </div>
+    `;
+
+    document.getElementById('rf-save-msg').style.display = 'none';
+    document.getElementById('rf-results').style.display = 'block';
+    document.getElementById('rf-results').scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+
+  function saveBatch() {
+    if (!pendingBatch) return;
+
+    let batches = loadBatches();
+    let nextId = parseInt(localStorage.getItem('ypp_nextid') || '1');
+    pendingBatch.id = 'B' + String(nextId).padStart(3, '0');
+    nextId++;
+    localStorage.setItem('ypp_nextid', String(nextId));
+
+    batches.unshift(pendingBatch);
+    try { localStorage.setItem('ypp_batches', JSON.stringify(batches)); } catch(e) {}
+
+    const msg = document.getElementById('rf-save-msg');
+    msg.textContent = pendingBatch.id + ' saved to Batch History.';
+    msg.style.display = 'block';
+
+    pendingBatch = null;
+  }
+
+  function resetRealFarm() {
+    ['rf-bags', 'rf-actual', 'rf-lost', 'rf-days'].forEach(id => document.getElementById(id).value = '');
+    document.getElementById('rf-results').style.display = 'none';
+    pendingBatch = null;
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  // ── TAB 3: Batch History ─────────────────────────────────────
+
+  function loadBatches() {
+    try { return JSON.parse(localStorage.getItem('ypp_batches') || '[]'); } catch(e) { return []; }
+  }
+
+  function renderHistory() {
+    const batches = loadBatches();
+    const isEmpty = batches.length === 0;
+
+    document.getElementById('hist-empty').style.display = isEmpty ? 'block' : 'none';
+    document.getElementById('hist-table-wrap').style.display = isEmpty ? 'none' : 'block';
+
+    const actions = document.getElementById('hist-actions');
+    actions.style.display = isEmpty ? 'none' : 'flex';
+
+    document.getElementById('hist-count').textContent = isEmpty ? '' : '(' + batches.length + ' batch' + (batches.length > 1 ? 'es' : '') + ')';
+
+    // Table
+    const tbody = document.getElementById('hist-tbody');
+    tbody.innerHTML = '';
+    batches.forEach((b, idx) => {
+      const effPill = b.efficiency >= 85 ? 'pill-green' : b.efficiency >= 70 ? 'pill-yellow' : 'pill-red';
+      const contamPill = b.contamRate < 5 ? 'pill-green' : b.contamRate < 10 ? 'pill-yellow' : 'pill-red';
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td style="font-weight:700;color:var(--accent)">${b.id || ('B' + String(idx + 1).padStart(3,'0'))}</td>
+        <td style="color:var(--muted)">${b.date || '—'}</td>
+        <td>${emojis[b.type]} ${names[b.type]}</td>
+        <td>${b.bags.toLocaleString()}</td>
+        <td>${fmt(b.expected)} kg</td>
+        <td style="font-weight:600">${fmt(b.actual)} kg</td>
+        <td><span class="pill ${effPill}">${b.efficiency.toFixed(1)}%</span></td>
+        <td><span class="pill ${contamPill}">${b.contamRate.toFixed(1)}%</span></td>
+        <td>${b.days ? b.days + 'd' : '—'}</td>
+        <td><button class="btn-danger" onclick="deleteBatch('${b.id || idx}')">✕</button></td>
+      `;
+      tbody.appendChild(tr);
+    });
+
+    // Insights (2+ batches only)
+    const insightsEl = document.getElementById('hist-insights');
+    if (batches.length >= 2) {
+      insightsEl.style.display = 'block';
+      renderInsights(batches);
+    } else {
+      insightsEl.style.display = 'none';
+    }
+  }
+
+  function renderInsights(batches) {
+    const avgEff = batches.reduce((s, b) => s + b.efficiency, 0) / batches.length;
+    const avgContam = batches.reduce((s, b) => s + b.contamRate, 0) / batches.length;
+    const totalActual = batches.reduce((s, b) => s + b.actual, 0);
+
+    // Best type by avg efficiency
+    const byType = {};
+    batches.forEach(b => {
+      if (!byType[b.type]) byType[b.type] = [];
+      byType[b.type].push(b.efficiency);
+    });
+    const typeAvgs = Object.entries(byType).map(([t, vals]) => ({ type: t, avg: vals.reduce((s,v)=>s+v,0)/vals.length }));
+    typeAvgs.sort((a, b) => b.avg - a.avg);
+    const best = typeAvgs[0];
+    const worst = typeAvgs[typeAvgs.length - 1];
+
+    document.getElementById('insight-grid').innerHTML = `
+      <div class="insight-item">
+        <div class="i-label">Avg Efficiency</div>
+        <div class="i-value" style="color:${avgEff >= 85 ? 'var(--green)' : avgEff >= 70 ? 'var(--yellow)' : 'var(--red)'}">${avgEff.toFixed(1)}%</div>
+        <div class="i-sub">across ${batches.length} batches</div>
+      </div>
+      <div class="insight-item">
+        <div class="i-label">Avg Contamination</div>
+        <div class="i-value" style="color:${avgContam < 5 ? 'var(--green)' : avgContam < 10 ? 'var(--yellow)' : 'var(--red)'}">${avgContam.toFixed(1)}%</div>
+        <div class="i-sub">${avgContam < 5 ? 'Within normal range' : avgContam < 10 ? 'Needs attention' : 'Action required'}</div>
+      </div>
+      <div class="insight-item">
+        <div class="i-label">Best Species</div>
+        <div class="i-value" style="color:var(--yellow)">${emojis[best.type]} ${names[best.type]}</div>
+        <div class="i-sub">${best.avg.toFixed(1)}% avg efficiency</div>
+      </div>
+      <div class="insight-item">
+        <div class="i-label">Total Tracked</div>
+        <div class="i-value" style="color:var(--accent2)">${fmt(totalActual)} kg</div>
+        <div class="i-sub">actual production</div>
+      </div>
+    `;
+
+    let rec = '';
+    if (typeAvgs.length > 1 && best.avg - worst.avg > 10) {
+      rec = `${emojis[best.type]} ${names[best.type]} performs ${(best.avg - worst.avg).toFixed(1)}% better than ${names[worst.type]} on average. Consider reallocating bags toward ${names[best.type]} in the next period.`;
+    } else if (avgContam >= 10) {
+      rec = 'Contamination rate is critically high across batches. Schedule a full facility audit — sterilization, airflow, and inoculation hygiene all need review.';
+    } else if (avgEff < 70) {
+      rec = 'Average efficiency below 70%. Cross-reference batch dates with environmental logs to identify the common factor causing underperformance.';
+    } else {
+      rec = 'Farm is operating in a healthy range. Keep recording batches — with 5+ data points the system can identify seasonal trends and give stronger recommendations.';
+    }
+
+    document.getElementById('insight-rec').textContent = rec;
+  }
+
+  function deleteBatch(id) {
+    let batches = loadBatches();
+    batches = batches.filter(b => b.id !== id);
+    try { localStorage.setItem('ypp_batches', JSON.stringify(batches)); } catch(e) {}
+    renderHistory();
+  }
+
+  function clearHistory() {
+    if (!confirm('Delete all batch history? This cannot be undone.')) return;
+    try {
+      localStorage.removeItem('ypp_batches');
+      localStorage.removeItem('ypp_nextid');
+    } catch(e) {}
+    renderHistory();
+  }
+
+  function exportCSV() {
+    const batches = loadBatches();
+    if (!batches.length) return;
+    const headers = ['ID', 'Date', 'Type', 'Bags', 'Bag Weight (kg)', 'Expected (kg)', 'Actual (kg)', 'Efficiency (%)', 'Lost Bags', 'Contamination (%)', 'Cycle Days'];
+    const rows = batches.map(b => [
+      b.id || '', b.date || '', names[b.type], b.bags, b.weight,
+      b.expected.toFixed(1), b.actual.toFixed(1),
+      b.efficiency.toFixed(1), b.lostBags, b.contamRate.toFixed(1), b.days || ''
+    ]);
+    const csv = [headers, ...rows].map(r => r.join(',')).join('\n');
+    const blob = new Blob([csv], { type: 'text/csv' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = 'yield-predictor-batches.csv';
+    a.click();
+  }
+
+  // ── Utilities ────────────────────────────────────────────────
+
+  function flash(id) {
+    const el = document.getElementById(id);
+    el.focus();
+    el.style.borderColor = 'var(--red)';
+    setTimeout(() => el.style.borderColor = '', 1500);
+  }
+
+  function flashEl(id) { flash(id); }
+</script>
+
+<footer class="site-footer">
+  <div class="footer-inner">
+    <span>Designed by <strong>Hisham AlHoot</strong></span>
+    <span class="footer-dot">·</span>
+    <span class="footer-brand">JyväSSisu Fungi</span>
+    <span class="footer-dot">·</span>
+    <span>&copy; 2026</span>
+  </div>
+</footer>
+
+</body>
+</html>
