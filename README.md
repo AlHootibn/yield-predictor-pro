@@ -1,4 +1,4 @@
-# Yield Predictor Pro — JyväSSisu Fungi
+# Yield Predictor Pro — JyväSisu Fungi
 
 > An AgriTech decision platform for mushroom growers. Predict production, track real farm performance, and optimize profitability across multiple grow cycles.
 
@@ -8,7 +8,7 @@
 
 Yield Predictor Pro is a professional planning and performance-tracking tool built for mushroom cultivation operations. It combines financial modelling, risk analysis, and real-data feedback into a single offline web application — no server, no account, no installation required.
 
-Built by **Hisham AlHoot** for **JyväSSisu Fungi** · Finland · 2026
+Built by **Hisham AlHoot** for **JyväSisu Fungi** · Finland · 2026
 
 ---
 
@@ -135,7 +135,7 @@ Yeild/
 
 ## Brand
 
-**JyväSSisu Fungi**  
+**JyväSisu Fungi**  
 Hisham AlHoot · Finland · 2026
 
 > *"Sisu"* — a Finnish concept of stoic determination, resilience, and acting rationally in the face of adversity. The spirit of every successful grow.
